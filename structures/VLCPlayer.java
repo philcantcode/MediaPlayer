@@ -21,6 +21,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import uk.co.caprica.vlcj.factory.MediaPlayerFactory;
+import uk.co.caprica.vlcj.media.MediaSlaveType;
 import uk.co.caprica.vlcj.player.base.MediaPlayer;
 import uk.co.caprica.vlcj.player.base.MediaPlayerEventAdapter;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
@@ -54,7 +55,7 @@ public class VLCPlayer
 		this.mediaPlayer = factory.mediaPlayers().newEmbeddedMediaPlayer();
 		this.vlcViewer = new ImageView();
 		this.mediaPlayer.videoSurface().set(videoSurfaceForImageView(this.vlcViewer));
-					
+
 		this.vlcViewer.setPreserveRatio(true);
 		
 		this.mediaPlayer.events().addMediaPlayerEventListener(new MediaPlayerEventAdapter()
@@ -206,6 +207,9 @@ public class VLCPlayer
             		CodeLogger.log("Starting playing", DEPTH.CHILD);
             		mediaPlayer.media().start(playlist.get(pid).path);
             	}
+            	
+            	/* TODO: This disables all subtitles automatically */
+            	mediaPlayer.subpictures().setTrack(-1);
             }
         });
 		

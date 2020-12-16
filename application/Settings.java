@@ -16,6 +16,8 @@ public class Settings
 	public static ArrayList<String> images = new ArrayList<String>();
 	public static ArrayList<String> movies = new ArrayList<String>();
 	
+	public static final String RES_PATH = "/res/";
+	
 	public Settings()
 	{
 		images.add("png"); images.add("jpg"); images.add("jpeg"); images.add("gif");

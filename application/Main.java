@@ -2,7 +2,6 @@ package application;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Stack;
 
 import controllers.DisplayWindow;
 import controllers.VLCWindow;
@@ -20,6 +19,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -67,15 +67,15 @@ public class Main extends Application
 	{	
 		Main.mainStage = mainStage;
 		Main.vlcStage = new Stage();
-		/* TODO: POSSIBLE RACE CONDITION WITH SIDEPANEL */
-		BorderPane mainDisplay = FXMLLoader.load(getClass().getResource("/Display.fxml"));		
-		StackPane vlcDisplay = FXMLLoader.load(getClass().getResource("/VLC.fxml"));
+		/* TODO: POSSIBLE RACE CONDITION WITH SIDEPANEL - FUTURE-PHIL SHUD FIX DIS */
+		BorderPane mainDisplay = FXMLLoader.load(getClass().getResource(Settings.RES_PATH + "Display.fxml"));		
+		StackPane vlcDisplay = FXMLLoader.load(getClass().getResource(Settings.RES_PATH + "VLC.fxml"));
 				
 		Main.mainScene = new Scene(mainDisplay, 800, 600);
 		Main.vlcScene = new Scene(vlcDisplay, 800, 600);
 		
-		Main.mainScene.getStylesheets().add("/darkMode.css");
-		Main.vlcScene.getStylesheets().add("/darkMode.css");
+		Main.mainScene.getStylesheets().add(getClass().getResource(Settings.RES_PATH + "darkMode.css").toExternalForm());
+		Main.vlcScene.getStylesheets().add(getClass().getResource(Settings.RES_PATH + "darkMode.css").toExternalForm());
 		
 		Main.mainStage.setTitle("Media Player V2M3");
 		Main.mainStage.setScene(mainScene);

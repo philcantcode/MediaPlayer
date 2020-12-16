@@ -1,5 +1,8 @@
 package controllers;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import application.Settings;
 import application.Settings.FILETYPE;
 import javafx.event.ActionEvent;
@@ -35,8 +38,7 @@ public class ButtonFactory
 	
 	public ButtonFactory folder()
 	{
-		Image icon = new Image("/folder.png");
-		ImageView view = new ImageView(icon);
+		ImageView view = new ImageView(new Image(getClass().getResourceAsStream(Settings.RES_PATH + "folder.png")));
 		view.setFitHeight(40);
 		view.setPreserveRatio(true);
 		
@@ -47,8 +49,7 @@ public class ButtonFactory
 	
 	public ButtonFactory newFolder()
 	{
-		Image icon = new Image("/NewFolder.png");
-		ImageView view = new ImageView(icon);
+		ImageView view = new ImageView(new Image(getClass().getResourceAsStream(Settings.RES_PATH + "NewFolder.png")));
 		view.setFitHeight(40);
 		view.setPreserveRatio(true);
 		
@@ -69,13 +70,13 @@ public class ButtonFactory
 		Image icon = null;
 		
 		if (ext == FILETYPE.MOVIE)
-			icon = new Image("/play.png");
+			icon = new Image(getClass().getResourceAsStream(Settings.RES_PATH + "play.png"));
 		
 		if (ext == FILETYPE.IMAGE)
-			icon = new Image("/image.png");
+			icon = new Image(getClass().getResourceAsStream(Settings.RES_PATH + "image.png"));
 		
 		if (ext == FILETYPE.UNKNOWN)
-			icon = new Image("/file.png");
+			icon = new Image(getClass().getResourceAsStream(Settings.RES_PATH + "file.png"));
 		
 		ImageView view = new ImageView(icon);
 		view.setFitHeight(40);
