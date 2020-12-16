@@ -7,7 +7,16 @@ Run As > Run Configurations > VM Arguments:
 
 JavaFX has to be downloaded
 
-POM:
+To Run, create a bash script and launch using:
+
+#!/bin/bash
+
+echo "Launching MediaPlayer"
+java --module-path "C:\Program Files\Java\javafx-sdk-13.0.1\lib" --add-modules javafx.controls,javafx.fxml,javafx.graphics -jar "E:\Google Drive\MediaPlayerV2M3.jar"
+
+
+
+POM File:
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
