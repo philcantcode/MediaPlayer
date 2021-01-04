@@ -1,15 +1,23 @@
 package application;
 
 import java.awt.AWTException;
+import java.awt.Desktop;
 import java.awt.MouseInfo;
 import java.awt.PointerInfo;
 import java.awt.Robot;
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBuffer;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.TimeUnit;
+
+import javax.imageio.ImageIO;
 
 public class Utils
 {	
@@ -132,7 +140,7 @@ public class Utils
 	
 	public static enum OS
 	{
-		OSX,WIN
+		OSX, WIN
 	}
 	
 	public static void wait(int ms)
@@ -145,5 +153,25 @@ public class Utils
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	public static void openBrowser(String url)
+	{
+		 try 
+		 {
+			 Desktop.getDesktop().browse(new URL(url).toURI());
+		 } 
+		 catch (MalformedURLException e) 
+		 {
+			 e.printStackTrace();
+		 } 
+		 catch (IOException e) 
+		 {
+			 e.printStackTrace();
+		 } 
+		 catch (URISyntaxException e) 
+		 {
+			 e.printStackTrace();
+		 }
 	}
 }

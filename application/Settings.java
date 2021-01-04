@@ -18,6 +18,8 @@ public class Settings
 	
 	public static final String RES_PATH = "/res/";
 	
+	public static final int SKIP_AMT_SEC = 10;
+	
 	public Settings()
 	{
 		images.add("png"); images.add("jpg"); images.add("jpeg"); images.add("gif");
@@ -34,12 +36,15 @@ public class Settings
 		if (!settings.keySet().contains(Key.MINIMISE_MAIN_WIN))
 			DBInsert.insertSetting(Key.MINIMISE_MAIN_WIN.toString(), "false");
 		
+		if (!settings.keySet().contains(Key.START_SERVER))
+			DBInsert.insertSetting(Key.START_SERVER.toString(), "true");
+		
 		Playback.folderMeta = DBSelect.loadFolderMeta();
 	}
 	
 	public static enum Key
 	{
-		AUTOPLAY, FULLSCREEN_START, MINIMISE_MAIN_WIN
+		AUTOPLAY, FULLSCREEN_START, MINIMISE_MAIN_WIN, START_SERVER
 	}
 	
 	public static enum FILETYPE

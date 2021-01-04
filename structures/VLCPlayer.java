@@ -34,7 +34,8 @@ public class VLCPlayer
     private EmbeddedMediaPlayer mediaPlayer;
     protected ImageView vlcViewer;
     
-    public boolean isPlaying = false;
+    public boolean isLoadedVLC = false;
+    public boolean isPlayingVLC = false;
     public boolean isFullscreen = false;
     
     private ArrayList<Playback> playlist = new ArrayList<Playback>();
@@ -64,7 +65,7 @@ public class VLCPlayer
             public void playing(MediaPlayer mediaPlayer) 
             {
 				CodeLogger.log("Playing Media: " + playlist.get(pid).path, DEPTH.PARENT);
-            	isPlaying = true;
+            	isPlayingVLC = true;
             	
             	updatePlaybackTimer = new Timer();
             	updatePlaybackTimer.scheduleAtFixedRate(new TimerTask() 
@@ -84,7 +85,7 @@ public class VLCPlayer
 					public void run()
 					{
 						CodeLogger.log("Preventing Screen Sleep", DEPTH.CHILD);
-						Utils.preventScreenSleep(5 * 60);
+						Utils.preventScreenSleep(15 * 60);
 					}
 				}, 0, SCREEN_SLEEP_INTERVAL);
             }
@@ -147,8 +148,8 @@ public class VLCPlayer
 					{
 						clickScheduler = clickTracker.schedule(() -> 
 						{
-							if (isPlaying)
-								pausePlayback();
+							if (isPlayingVLC)
+								pauseVlcPlayback();
 							else
 								playPlayback();
 							
@@ -167,17 +168,9 @@ public class VLCPlayer
 						clickScheduler.cancel(false);
 						
 						if (isFullscreen)
-						{
-							setPlayerFullscreen(false);
-							Main.videoWindow.showMenus(true);
-							Main.setVLCFullscreen(false);
-						}
+							Main.videoWindow.manageVLCViewer(false, true, true);
 						else
-						{
-							setPlayerFullscreen(true);
-							Main.videoWindow.showMenus(false);
-							Main.setVLCFullscreen(true);
-						}
+							Main.videoWindow.manageVLCViewer(true, false, false);
 					}	
 				}
 			}
@@ -188,6 +181,7 @@ public class VLCPlayer
 	{
 		cleanup(true);
 		playlist.add(pb);
+		isLoadedVLC = true;
 		pid++;
 		
 		Main.showVLCScene(true);
@@ -210,9 +204,13 @@ public class VLCPlayer
             	
             	/* TODO: This disables all subtitles automatically */
             	mediaPlayer.subpictures().setTrack(-1);
+            	
+            	playlist.get(pid).endTime = mediaPlayer.status().length();
             }
         });
 		
+		Main.setTitle(pb.name);
+				
 		seek(playlist.get(pid).playTime);
 	}
 	
@@ -237,7 +235,7 @@ public class VLCPlayer
 			{
 				Main.videoWindow.updatePlaybackButtons();
 				Main.videoWindow.focusCleanup();
-				Main.videoWindow.showMenus(true);
+				Main.videoWindow.manageVLCViewer(null, true, true);
 			}
 		});
 		
@@ -266,25 +264,28 @@ public class VLCPlayer
 		});
 	}
 	
-	public void pausePlayback()
+	public void pauseVlcPlayback()
 	{
-		isPlaying = false;
-		
-		mediaPlayer.submit(new Runnable() 
+		if (isPlayingVLC)
 		{
-            @Override
-            public void run() 
-            {
-            	mediaPlayer.controls().pause();
-            }
-        });
+			mediaPlayer.submit(new Runnable() 
+    		{
+                @Override
+                public void run() 
+                {
+                	mediaPlayer.controls().pause();
+                }
+            });
+			
+			isPlayingVLC = false;
+		}
 	}
 	
 	protected void stopPlayback()
 	{
-		if (isPlaying)
+		if (isPlayingVLC)
 		{
-    		isPlaying = false;
+    		isPlayingVLC = false;
     		
     		mediaPlayer.submit(new Runnable() 
     		{
@@ -301,7 +302,7 @@ public class VLCPlayer
 	
 	protected void playPlayback()
 	{
-		isPlaying = true;
+		isPlayingVLC = true;
 		
 		mediaPlayer.submit(new Runnable() 
 		{
@@ -324,9 +325,9 @@ public class VLCPlayer
 		mediaPlayer.fullScreen().set(fullscreen);
 	}
 	
-	public void fastforward(int sec)
+	public void fastforward()
 	{	
-		long newTime = playlist.get(pid).playTime + (sec * 1000);
+		long newTime = playlist.get(pid).playTime + (Settings.SKIP_AMT_SEC * 1000);
 		long maxTime = mediaPlayer.status().length();
 		
 		if (newTime > maxTime)
@@ -340,9 +341,9 @@ public class VLCPlayer
     	seek(newTime);
 	}
 	
-	public void rewind(int sec)
+	public void rewind()
 	{
-		long newTime = playlist.get(pid).playTime + (sec * -1000);
+		long newTime = playlist.get(pid).playTime + (Settings.SKIP_AMT_SEC * -1000);
 		
 		if (newTime < 0)
 			newTime = 0;
@@ -353,5 +354,29 @@ public class VLCPlayer
     	Main.videoWindow.seek(scale, newTime);
     	
     	seek(newTime);
+	}
+	
+	public PlaybackStatus getStatus()
+	{
+		PlaybackStatus pbs = new PlaybackStatus();
+		
+		if (isPlayingVLC)
+			pbs.status = "Playing";
+		else 
+		{
+			if (pid == -1)
+				pbs.status = "Stopped";
+			else
+				pbs.status = "Paused";
+		}
+		
+		if (pid != -1)
+		{
+			pbs.title = playlist.get(pid).name.replaceAll(",", ".");
+			pbs.playbackTime = Utils.msToTime(playlist.get(pid).playTime);
+			pbs.endTime = Utils.msToTime(playlist.get(pid).endTime);
+		}
+		
+		return pbs;
 	}
 }

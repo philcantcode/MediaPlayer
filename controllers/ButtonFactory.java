@@ -1,12 +1,7 @@
 package controllers;
 
-import java.io.IOException;
-import java.io.InputStream;
-
 import application.Settings;
 import application.Settings.FILETYPE;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Tooltip;

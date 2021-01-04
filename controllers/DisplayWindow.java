@@ -1,6 +1,10 @@
 package controllers;
 
+import java.awt.Desktop;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.ResourceBundle;
@@ -8,6 +12,7 @@ import java.util.Stack;
 
 import application.Main;
 import application.Settings;
+import application.Utils;
 import application.Settings.Key;
 import application.Settings.META;
 import database.DBDelete;
@@ -21,11 +26,9 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.Accordion;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
-import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
-import javafx.scene.control.SplitPane.Divider;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.TilePane;
@@ -36,6 +39,7 @@ import structures.FolderManager;
 import structures.FolderManager.DIRECTORY_TYPE;
 import structures.MediaItem;
 import structures.Playback;
+import web.Server;
 
 public class DisplayWindow implements Initializable
 {
@@ -55,11 +59,13 @@ public class DisplayWindow implements Initializable
 	
 	@FXML private TextField pathField;
 	@FXML private ToggleButton settingsAutoPlay;
+	@FXML private ToggleButton serverLaunch;
 	@FXML private ToggleButton titleFolder;
 	@FXML private ToggleButton seriesFolder;
 	@FXML private ToggleButton categoriesFolder;
 	
 	@FXML private VBox recentlyAdded;
+	@FXML private Button remoteAddr;
 	
 	private Stack<String> browsingHistory = new Stack<String>();
     
@@ -74,6 +80,15 @@ public class DisplayWindow implements Initializable
 		populateWatchfolderArea();
 		populateRecentlyWatchedArea();
 		populateDirectoryAreaInitial();
+		
+		remoteAddr.setOnAction(new EventHandler<ActionEvent>() 
+		{
+			@Override
+			public void handle(ActionEvent event) 
+			{
+				Utils.openBrowser(Server.getSiteAddress());
+			}
+		});
 		
 		menuAccord.setExpandedPane(menuAccord.getPanes().get(1));
 		
@@ -120,6 +135,18 @@ public class DisplayWindow implements Initializable
 					Settings.set(Key.AUTOPLAY, false);
 				else
 					Settings.set(Key.AUTOPLAY, true);
+			}
+		});
+		
+		serverLaunch.setOnAction(new EventHandler<ActionEvent>() 
+		{
+			@Override
+			public void handle(ActionEvent event) 
+			{
+				if (Settings.getBool(Key.START_SERVER))
+					Settings.set(Key.START_SERVER, false);
+				else
+					Settings.set(Key.START_SERVER, true);
 			}
 		});
 		
@@ -207,6 +234,9 @@ public class DisplayWindow implements Initializable
 		if (Settings.getBool(Key.AUTOPLAY))
 			settingsAutoPlay.setSelected(true);
 		
+		if (Settings.getBool(Key.START_SERVER))
+			serverLaunch.setSelected(true);
+		
 		setTitleSeriesFolder();
 	}
 	
@@ -257,7 +287,7 @@ public class DisplayWindow implements Initializable
         new Thread(runnable).start();
 	}
 
-	private void populateRecentlyWatchedArea()
+	public void populateRecentlyWatchedArea()
 	{
 		playHistoryArea.getChildren().clear();
 		ArrayList<String> listed = new ArrayList<String>();

@@ -3,6 +3,7 @@ package application;
 import java.io.File;
 import java.io.IOException;
 
+import application.Settings.Key;
 import controllers.DisplayWindow;
 import controllers.VLCWindow;
 import database.DBDelete;
@@ -19,7 +20,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar.ButtonData;
-import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -32,6 +32,8 @@ import javafx.stage.WindowEvent;
 import structures.MediaItem;
 import universals.CodeLogger;
 import universals.CodeLogger.DEPTH;
+import web.RootWebpage;
+import web.Server;
 
 
 public class Main extends Application 
@@ -43,6 +45,8 @@ public class Main extends Application
 	private static Stage vlcStage = null;
 	private static Scene mainScene = null;
 	private static Scene vlcScene = null;
+	
+	public static Server server = null;
 		
 	public static void main(String[] args) 
 	{
@@ -54,13 +58,13 @@ public class Main extends Application
 		new Settings();
 		
 		MediaItem.loadAll();
+		
+		if (Settings.getBool(Key.START_SERVER))
+		{
+			server = new Server();
+		}
 	
 		launch(args);
-	}
-	
-	@Override public void init() 
-	{
-
 	}
 	
 	@Override public void start(Stage mainStage) throws IOException 
@@ -92,6 +96,7 @@ public class Main extends Application
             @Override
             public void handle(WindowEvent t) 
             {
+            	Server.shutdown();
                 Platform.exit();
                 System.exit(0);
             }
@@ -103,7 +108,8 @@ public class Main extends Application
             public void handle(WindowEvent t) 
             {
             	Main.vlcStage.hide();
-            	Main.videoWindow.pausePlayback();
+            	Main.videoWindow.pauseVlcPlayback();
+            	Main.mainWindow.populateRecentlyWatchedArea();	
             }
         });
         
@@ -114,33 +120,35 @@ public class Main extends Application
 			if (kc == KeyCode.SPACE)
 			{
 				Main.videoWindow.togglePlayback();
-				Main.videoWindow.showMenus(false);
+				Main.videoWindow.manageVLCViewer(null, false, false);
 			}
 			else if (kc == KeyCode.ESCAPE)
 			{
-				Main.videoWindow.showMenus(true);
-				Main.videoWindow.setPlayerFullscreen(false);
-				setVLCFullscreen(false);
+				Main.videoWindow.manageVLCViewer(false, true, true);
 			}
 			else if (kc == KeyCode.LEFT)
 			{
-				Main.videoWindow.rewind(10);
+				Main.videoWindow.rewind();
 			}
 			else if (kc == KeyCode.RIGHT)
 			{
-				Main.videoWindow.fastforward(10);
+				Main.videoWindow.fastforward();
+			}
+			else if (kc == KeyCode.ENTER)
+			{
+				Main.videoWindow.skip();
 			}
 		});
 		
 		Main.vlcScene.addEventFilter(MouseEvent.MOUSE_ENTERED, event ->
 		{
-			Main.videoWindow.showMenus(true);
+			Main.videoWindow.manageVLCViewer(null, true, true);
 		});
 		
 		Main.vlcScene.addEventFilter(MouseEvent.MOUSE_EXITED, event ->
 		{
-			if (Main.videoWindow.isPlaying)
-				Main.videoWindow.showMenus(false);
+			if (Main.videoWindow.isPlayingVLC)
+				Main.videoWindow.manageVLCViewer(null, false, false);
 		});
                         
         Main.mainStage.show();
@@ -194,11 +202,16 @@ public class Main extends Application
 		else
 			vlcScene.setCursor(Cursor.DEFAULT);
 		
-		CodeLogger.log("Setting cursor visibility: " + visible, DEPTH.CHILD);
+		CodeLogger.log("Setting cursor visibility: " + visible, DEPTH.CHILD, false);
 	}
 	
 	public static void setVLCFullscreen(boolean fullscreen)
 	{
 		vlcStage.setFullScreen(fullscreen);
+	}
+	
+	public static void setTitle(String title)
+	{
+		Main.vlcStage.setTitle(title);
 	}
 }

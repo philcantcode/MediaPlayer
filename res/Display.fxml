@@ -17,6 +17,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #284384;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.DisplayWindow">
@@ -79,6 +80,7 @@
                   <VBox fx:id="settingsVbox" prefHeight="200.0" prefWidth="100.0" spacing="5.0" style="-fx-background-color: #284384 #284384 #284384 #284384 #284384 #284384 #284384 #284384;">
                      <children>
                         <ToggleButton fx:id="settingsAutoPlay" mnemonicParsing="false" prefWidth="999.0" text="AutoPlay Media" />
+                        <ToggleButton fx:id="serverLaunch" mnemonicParsing="false" prefWidth="999.0" text="Remote Server Startup" />
                      </children></VBox>
                </content>
             </TitledPane>
@@ -93,6 +95,7 @@
                   <Insets bottom="1.0" left="10.0" right="10.0" />
                </padding>
                <children>
+                  <Button fx:id="remoteAddr" mnemonicParsing="false" text="Open Remote Controller" />
                   <ProgressBar fx:id="progressBar" prefWidth="200.0" progress="0.0" />
                </children>
             </HBox>

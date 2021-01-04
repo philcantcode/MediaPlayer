@@ -24,9 +24,12 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.web.WebView;
 import structures.FolderManager;
 import structures.Playback;
 import structures.VLCPlayer;
+import universals.CodeLogger;
+import universals.CodeLogger.DEPTH;
 
 public class VLCWindow extends VLCPlayer implements Initializable
 {
@@ -42,7 +45,10 @@ public class VLCWindow extends VLCPlayer implements Initializable
 	@FXML Button vlcPlayNext;
 	@FXML Button vlcPlayPrevious;
 	
+	@FXML WebView webView;
+	
 	private boolean dontSeek = false;
+	private static VIEWER currentView = VIEWER.NONE;
 	
 	private boolean isCursorVisible = true;
 	private boolean blockCursorHiding = false;
@@ -73,13 +79,10 @@ public class VLCWindow extends VLCPlayer implements Initializable
 			@Override
 			public void handle(Event event)
 			{
-				if (isPlaying && !isCursorVisible) 
+				if (isPlayingVLC && !isCursorVisible) 
 				{
-					Main.setCursorVis(true);
-					isCursorVisible = true;
-					
 					if (isFullscreen)
-						showMenus(true);
+						manageVLCViewer(null, true, true);
 				}
 				
 				if (mouseScheduler != null)
@@ -87,13 +90,10 @@ public class VLCWindow extends VLCPlayer implements Initializable
 				
 				mouseScheduler = mouseTracker.schedule(() -> 
 				{
-					if (!blockCursorHiding && isPlaying)
+					if (!blockCursorHiding && isPlayingVLC)
 					{
-						Main.setCursorVis(false);
-						isCursorVisible = false;
-						
 						if (isFullscreen)
-							showMenus(false);
+							manageVLCViewer(null, false, false);
 					}
 					
 				}, 2000, TimeUnit.MILLISECONDS);
@@ -149,13 +149,7 @@ public class VLCWindow extends VLCPlayer implements Initializable
 			@Override
 			public void handle(ActionEvent event)
 			{
-				File nextFile = FolderManager.nextFile(Main.videoWindow.getLoadedMedia());
-				
-        		if (nextFile != null)
-        		{
-        			Playback pb = Playback.findPlayback(nextFile.getName(), nextFile.getAbsolutePath());
-        			initialise(pb, false);
-        		}
+				skip();
 			}
 		});
 		
@@ -180,15 +174,15 @@ public class VLCWindow extends VLCPlayer implements Initializable
 	
 	public void togglePlayback()
 	{
-		if (isPlaying)
-			pausePlayback();
+		if (isPlayingVLC)
+			pauseVlcPlayback();
 		else
 			playPlayback();
 	}
 	
 	public void updatePlaybackButtons()
 	{
-		if (isPlaying)
+		if (isPlayingVLC)
 			vlcPause.setText("Pause");
 		else
 			vlcPause.setText("Resume");
@@ -206,12 +200,6 @@ public class VLCWindow extends VLCPlayer implements Initializable
 		});
 	}
 	
-	public void showMenus(boolean show)
-	{
-		vlcBottomMenu.setVisible(show);
-		vlcTopMenu.setVisible(show);
-	}
-	
 	/* Takes in a scaled pos value (0-1) and a MS time */
 	public void seek(double pos, long ms)
 	{
@@ -227,5 +215,85 @@ public class VLCWindow extends VLCPlayer implements Initializable
 				}
 			});
 		}
+	}
+	
+	public void skip()
+	{
+		File nextFile = FolderManager.nextFile(Main.videoWindow.getLoadedMedia());
+		
+		CodeLogger.log("NEXT: " + nextFile.getName(), DEPTH.CHILD);
+		
+		if (nextFile != null)
+		{
+			Playback pb = Playback.findPlayback(nextFile.getName(), nextFile.getAbsolutePath());
+			initialise(pb, false);
+		}
+	}
+	
+	/* Manager for the screen to set fullscreen, cursor and menu visibility */
+	public void manageVLCViewer(Boolean setFullscreen, Boolean showCursor, Boolean showMenus)
+	{
+		if (setFullscreen != null)
+		{
+			Main.setVLCFullscreen(setFullscreen);
+			setPlayerFullscreen(setFullscreen);
+		}
+		
+		if (showCursor != null)
+		{
+			Main.setCursorVis(showCursor);
+			isCursorVisible = showCursor;
+		}
+		
+		if (showMenus != null)
+		{
+			vlcBottomMenu.setVisible(showMenus);
+			vlcTopMenu.setVisible(showMenus);
+		}
+	}
+		
+	public void showViewer(VIEWER viewer, String url)
+	{
+		CodeLogger.log("Switching to viewer: " + viewer, DEPTH.CHILD);
+
+		if (viewer == VIEWER.WEB)
+		{			
+			if (isLoadedVLC && isPlayingVLC)
+				pauseVlcPlayback();
+			
+			Platform.runLater(new Runnable() 
+			{	
+				@Override
+				public void run() 
+				{
+					vlcViewer.setVisible(false);
+					webView.setVisible(true);
+					
+					webView.getEngine().load(url);
+				}
+			});	
+		}
+		else if (viewer == VIEWER.VLC)
+		{			
+			Platform.runLater(new Runnable() 
+			{	
+				@Override
+				public void run() 
+				{
+					webView.getEngine().load("");
+					
+					webView.setVisible(false);
+					vlcViewer.setVisible(true);
+					
+					if (isLoadedVLC)
+						playPlayback();
+				}
+			});	
+		}
+	}
+	
+	public enum VIEWER
+	{
+		VLC, WEB, NONE
 	}
 }

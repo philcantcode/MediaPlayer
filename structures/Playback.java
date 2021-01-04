@@ -19,6 +19,7 @@ public class Playback
 	public String path = null;
 	public long playTime = -1;
 	public long date = -1;
+	public long endTime = -1;
 	
 	public String parentFolder = null;
 	public String namedFolder = null;
@@ -86,7 +87,7 @@ public class Playback
 		}
 		else
 		{
-			CodeLogger.log("Metadata named " + path + ": " + namedFolder, DEPTH.CHILD);
+			CodeLogger.log("Metadata named " + path + ": " + namedFolder, DEPTH.CHILD, false);
 		}
 		
 		return namedFolder;
